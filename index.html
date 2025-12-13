@@ -1,47 +1,85 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Interactive Photo Album</title>
     <style>
+        :root {
+            --bg-color: #f5f7fa;
+            --secondary-bg: #c3cfe2;
+            --card-bg: white;
+            --text-color: #2c3e50;
+            --text-secondary: #555;
+            --accent-color: #4CAF50;
+            --accent-hover: #45a049;
+            --shadow: rgba(0,0,0,0.1);
+            --progress-bg: #eee;
+            --dot-color: #bbb;
+        }
+
+        .night-mode {
+            --bg-color: #121212;
+            --secondary-bg: #1a1a1a;
+            --card-bg: #1e1e1e;
+            --text-color: #f0f0f0;
+            --text-secondary: #b0b0b0;
+            --accent-color: #4CAF50;
+            --accent-hover: #45a049;
+            --shadow: rgba(0,0,0,0.3);
+            --progress-bg: #333;
+            --dot-color: #666;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             text-align: center;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background: linear-gradient(135deg, var(--bg-color) 0%, var(--secondary-bg) 100%);
             padding: 20px;
             min-height: 100vh;
-            margin: 0;
+            color: var(--text-color);
+            transition: background 0.3s ease, color 0.3s ease;
         }
         
         .greeting {
-            background: white;
-            padding: 30px;
+            background: var(--card-bg);
+            padding: 25px 20px;
             border-radius: 15px;
             max-width: 900px;
-            margin: 0 auto 30px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            margin: 0 auto 25px;
+            box-shadow: 0 8px 25px var(--shadow);
             animation: fadeIn 1s ease-out;
+            color: var(--text-color);
         }
         
         .greeting h1 {
-            color: #2c3e50;
+            color: var(--text-color);
             margin-bottom: 15px;
-            font-size: 2.5em;
+            font-size: clamp(1.8em, 4vw, 2.5em);
         }
         
         .greeting p {
-            color: #555;
-            font-size: 1.1em;
+            color: var(--text-secondary);
+            font-size: clamp(1em, 2vw, 1.1em);
             line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
         }
         
         .slideshow-container {
             max-width: 1000px;
-            margin: 40px auto;
+            margin: 30px auto;
             position: relative;
-            background: white;
+            background: var(--card-bg);
             border-radius: 15px;
             padding: 20px;
-            box-shadow: 0 10px 35px rgba(0,0,0,0.15);
+            box-shadow: 0 10px 35px var(--shadow);
             animation: slideUp 1s ease-out;
         }
         
@@ -49,14 +87,25 @@
             display: none;
             position: relative;
             overflow: hidden;
+            width: 100%;
+            height: 0;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+        }
+        
+        .mySlides.active {
+            display: block;
         }
         
         .mySlides img {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            height: 500px;
-            object-fit: cover;
+            height: 100%;
+            object-fit: contain; /* Changed from cover to contain */
             border-radius: 10px;
             transition: transform 0.3s ease;
+            background-color: var(--card-bg); /* Background for transparent areas */
         }
         
         .mySlides img:hover {
@@ -71,7 +120,7 @@
             bottom: 0;
             width: 100%;
             text-align: center;
-            font-size: 1.2em;
+            font-size: clamp(1em, 2vw, 1.2em);
             font-weight: 500;
             border-radius: 0 0 10px 10px;
         }
@@ -82,12 +131,12 @@
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            width: 60px;
-            height: 60px;
+            width: 50px;
+            height: 50px;
             padding: 0;
             color: white;
             font-weight: bold;
-            font-size: 24px;
+            font-size: 20px;
             transition: all 0.3s ease;
             border-radius: 50%;
             background-color: rgba(0,0,0,0.6);
@@ -99,8 +148,8 @@
             backdrop-filter: blur(5px);
         }
         
-        .prev { left: 30px; }
-        .next { right: 30px; }
+        .prev { left: 15px; }
+        .next { right: 15px; }
         
         .prev:hover, .next:hover {
             background-color: rgba(0,0,0,0.9);
@@ -111,17 +160,18 @@
         /* Dots indicator */
         .dots-container {
             text-align: center;
-            padding: 25px;
+            padding: 20px;
             display: flex;
             justify-content: center;
-            gap: 15px;
+            gap: 12px;
+            flex-wrap: wrap;
         }
         
         .dot {
             cursor: pointer;
-            height: 18px;
-            width: 18px;
-            background-color: #bbb;
+            height: 14px;
+            width: 14px;
+            background-color: var(--dot-color);
             border-radius: 50%;
             display: inline-block;
             transition: all 0.3s ease;
@@ -133,8 +183,8 @@
             transform: scale(1.2);
         }
         
-        .active {
-            background-color: #4CAF50;
+        .dot.active {
+            background-color: var(--accent-color);
             transform: scale(1.2);
             border-color: #2E7D32;
         }
@@ -142,40 +192,48 @@
         /* Floating controls container */
         .floating-controls {
             position: fixed;
-            bottom: 30px;
+            bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
             background: rgba(255, 255, 255, 0.95);
-            border-radius: 50px;
-            padding: 15px 25px;
+            border-radius: 25px;
+            padding: 12px 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             display: flex;
-            gap: 15px;
+            gap: 12px;
             align-items: center;
             z-index: 1000;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255,255,255,0.3);
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 95%;
+        }
+        
+        .night-mode .floating-controls {
+            background: rgba(30, 30, 30, 0.95);
+            border: 1px solid rgba(255,255,255,0.1);
         }
         
         .control-btn {
-            background: #4CAF50;
+            background: var(--accent-color);
             color: white;
             border: none;
-            padding: 12px 24px;
-            border-radius: 25px;
+            padding: 10px 18px;
+            border-radius: 20px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 600;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
-            gap: 8px;
-            min-width: 160px;
+            gap: 6px;
+            min-width: 140px;
             justify-content: center;
         }
         
         .control-btn:hover {
-            background: #45a049;
+            background: var(--accent-hover);
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
         }
@@ -189,21 +247,42 @@
             box-shadow: 0 5px 15px rgba(244, 67, 54, 0.4);
         }
         
+        .control-btn.night-mode-btn {
+            background: #6a11cb;
+            min-width: 120px;
+        }
+        
+        .control-btn.night-mode-btn:hover {
+            background: #5a0cb9;
+            box-shadow: 0 5px 15px rgba(106, 17, 203, 0.4);
+        }
+        
+        .control-btn.night-mode-btn.active {
+            background: #ff8c00;
+        }
+        
         .speed-control {
             display: flex;
             align-items: center;
-            gap: 10px;
-            color: #333;
+            gap: 8px;
+            color: var(--text-color);
             font-weight: 500;
         }
         
         .speed-control select {
-            padding: 8px 15px;
-            border-radius: 20px;
-            border: 2px solid #4CAF50;
+            padding: 6px 12px;
+            border-radius: 15px;
+            border: 2px solid var(--accent-color);
             background: white;
+            color: #333;
             font-weight: 500;
             cursor: pointer;
+        }
+        
+        .night-mode .speed-control select {
+            background: #2a2a2a;
+            color: white;
+            border-color: var(--accent-color);
         }
         
         /* Flash animation */
@@ -242,8 +321,8 @@
         /* Progress bar */
         .progress-bar {
             width: 100%;
-            height: 5px;
-            background: #eee;
+            height: 4px;
+            background: var(--progress-bg);
             border-radius: 5px;
             margin-top: 15px;
             overflow: hidden;
@@ -251,7 +330,7 @@
         
         .progress {
             height: 100%;
-            background: #4CAF50;
+            background: var(--accent-color);
             width: 0%;
             transition: width 0.3s ease;
             border-radius: 5px;
@@ -260,13 +339,13 @@
         /* Slide counter */
         .slide-counter {
             position: absolute;
-            top: 20px;
-            right: 20px;
+            top: 15px;
+            right: 15px;
             background: rgba(0,0,0,0.7);
             color: white;
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 14px;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 13px;
             font-weight: 600;
             z-index: 5;
         }
@@ -274,23 +353,40 @@
         /* Thumbnail strip */
         .thumbnail-container {
             display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-            max-width: 900px;
+            justify-content: flex-start;
+            gap: 8px;
             margin: 20px auto;
+            flex-wrap: nowrap;
+            max-width: 100%;
+            overflow-x: auto;
+            padding: 10px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-color) transparent;
+        }
+        
+        .thumbnail-container::-webkit-scrollbar {
+            height: 6px;
+        }
+        
+        .thumbnail-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .thumbnail-container::-webkit-scrollbar-thumb {
+            background-color: var(--accent-color);
+            border-radius: 10px;
         }
         
         .thumbnail {
-            width: 80px;
-            height: 60px;
+            width: 70px;
+            height: 50px;
             object-fit: cover;
             border-radius: 5px;
             cursor: pointer;
             opacity: 0.6;
             transition: all 0.3s ease;
             border: 3px solid transparent;
+            flex-shrink: 0;
         }
         
         .thumbnail:hover {
@@ -300,8 +396,118 @@
         
         .thumbnail.active {
             opacity: 1;
-            border-color: #4CAF50;
+            border-color: var(--accent-color);
             transform: scale(1.1);
+        }
+        
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            
+            .greeting {
+                padding: 20px 15px;
+                margin-bottom: 20px;
+            }
+            
+            .slideshow-container {
+                padding: 15px;
+                margin: 20px auto;
+            }
+            
+            .mySlides {
+                padding-bottom: 75%; /* Taller aspect ratio for mobile */
+            }
+            
+            .prev, .next {
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
+            }
+            
+            .prev {
+                left: 10px;
+            }
+            
+            .next {
+                right: 10px;
+            }
+            
+            .floating-controls {
+                bottom: 10px;
+                padding: 10px 15px;
+                border-radius: 20px;
+                flex-direction: column;
+                width: 95%;
+                gap: 8px;
+            }
+            
+            .control-btn {
+                width: 100%;
+                max-width: 250px;
+                padding: 8px 15px;
+                font-size: 13px;
+            }
+            
+            .speed-control {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .dot {
+                height: 12px;
+                width: 12px;
+            }
+            
+            .thumbnail {
+                width: 60px;
+                height: 45px;
+            }
+            
+            .dots-container {
+                padding: 15px;
+                gap: 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .greeting h1 {
+                font-size: 1.5em;
+            }
+            
+            .greeting p {
+                font-size: 0.95em;
+            }
+            
+            .mySlides {
+                padding-bottom: 100%; /* Square aspect ratio for very small screens */
+            }
+            
+            .control-btn {
+                min-width: 120px;
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+            
+            .thumbnail {
+                width: 50px;
+                height: 40px;
+            }
+        }
+        
+        /* Night mode specific adjustments */
+        .night-mode .greeting {
+            background: var(--card-bg);
+            color: var(--text-color);
+        }
+        
+        .night-mode .slideshow-container {
+            background: var(--card-bg);
+        }
+        
+        .night-mode .speed-control span {
+            color: var(--text-color);
         }
     </style>
 </head>
@@ -315,168 +521,168 @@
 
     <div class="slideshow-container">
         <div class="slide-counter">
-            <span id="current-slide">1</span> / <span id="total-slides">4</span>
+            <span id="current-slide">1</span> / <span id="total-slides">39</span>
         </div>
         
         <!-- Slides -->
-<div class="mySlides fade">
-    <img src="1.jpg" alt="Beautiful beach sunset">
-</div>
-
-<div class="mySlides fade">
-    <img src="2.jpg" alt="Mountain hiking">
-</div>
-
-<div class="mySlides fade">
-    <img src="3.jpg" alt="City lights">
-</div>
-
-<div class="mySlides fade">
-    <img src="4.jpg" alt="Snow mountains">
-</div>
-
-<div class="mySlides fade">
-    <img src="5.jpg" alt="Forest trail">
-</div>
-
-<div class="mySlides fade">
-    <img src="6.jpg" alt="Desert landscape">
-</div>
-
-<div class="mySlides fade">
-    <img src="7.jpg" alt="Northern lights">
-</div>
-
-<div class="mySlides fade">
-    <img src="8.jpg" alt="Waterfall">
-</div>
-
-<div class="mySlides fade">
-    <img src="9.jpg" alt="Mountain lake">
-</div>
-
-<div class="mySlides fade">
-    <img src="10.jpg" alt="City skyline">
-</div>
-
-<div class="mySlides fade">
-    <img src="11.jpg" alt="Tropical beach">
-</div>
-
-<div class="mySlides fade">
-    <img src="12.jpg" alt="Autumn forest">
-</div>
-
-<div class="mySlides fade">
-    <img src="13.jpg" alt="Winter cabin">
-</div>
-
-<div class="mySlides fade">
-    <img src="14.jpg" alt="Sunrise over hills">
-</div>
-
-<div class="mySlides fade">
-    <img src="15.jpg" alt="Ocean waves">
-</div>
-
-<div class="mySlides fade">
-    <img src="16.jpg" alt="Wildlife safari">
-</div>
-
-<div class="mySlides fade">
-    <img src="17.jpg" alt="Historic architecture">
-</div>
-
-<div class="mySlides fade">
-    <img src="18.jpg" alt="Garden flowers">
-</div>
-
-<div class="mySlides fade">
-    <img src="19.jpg" alt="Starry night">
-</div>
-
-<div class="mySlides fade">
-    <img src="20.jpg" alt="Mountain peak">
-</div>
-
-<div class="mySlides fade">
-    <img src="21.jpg" alt="River valley">
-</div>
-
-<div class="mySlides fade">
-    <img src="22.jpg" alt="Desert dunes">
-</div>
-
-<div class="mySlides fade">
-    <img src="23.jpg" alt="Coastal cliffs">
-</div>
-
-<div class="mySlides fade">
-    <img src="24.jpg" alt="Forest mist">
-</div>
-
-<div class="mySlides fade">
-    <img src="25.jpg" alt="Ice glaciers">
-</div>
-
-<div class="mySlides fade">
-    <img src="26.jpg" alt="Volcano landscape">
-</div>
-
-<div class="mySlides fade">
-    <img src="27.jpg" alt="Rice terraces">
-</div>
-
-<div class="mySlides fade">
-    <img src="28.jpg" alt="Canyon view">
-</div>
-
-<div class="mySlides fade">
-    <img src="29.jpg" alt="Floating market">
-</div>
-
-<div class="mySlides fade">
-    <img src="30.jpg" alt="Ancient ruins">
-</div>
-
-<div class="mySlides fade">
-    <img src="31.jpg" alt="Botanical garden">
-</div>
-
-<div class="mySlides fade">
-    <img src="32.jpg" alt="Mountain pass">
-</div>
-
-<div class="mySlides fade">
-    <img src="33.jpg" alt="Lakeside village">
-</div>
-
-<div class="mySlides fade">
-    <img src="34.jpg" alt="Desert oasis">
-</div>
-
-<div class="mySlides fade">
-    <img src="35.jpg" alt="Castle on hill">
-</div>
-
-<div class="mySlides fade">
-    <img src="36.jpg" alt="Fjord landscape">
-</div>
-
-<div class="mySlides fade">
-    <img src="37.jpg" alt="Hot air balloons">
-</div>
-
-<div class="mySlides fade">
-    <img src="38.jpg" alt="Rainforest canopy">
-</div>
-
-<div class="mySlides fade">
-    <img src="39.jpg" alt="Aurora borealis">
-</div>
+        <div class="mySlides fade">
+            <img src="1.jpg" alt="Beautiful beach sunset">
+        </div>
         
-        <a class="prev" onclick="plusSlides(-1)">❮</a>
-        <a class="next" onclick="plusSlides(1)">❯</a>
+        <div class="mySlides fade">
+            <img src="2.jpg" alt="Mountain hiking">
+        </div>
+        
+        <div class="mySlides fade">
+            <img src="3.jpg" alt="City lights">
+        </div>
+        
+        <div class="mySlides fade">
+            <img src="4.jpg" alt="Snow mountains">
+        </div>
+        
+        <div class="mySlides fade">
+            <img src="5.jpg" alt="Forest trail">
+        </div>
+        
+        <div class="mySlides fade">
+            <img src="6.jpg" alt="Desert landscape">
+        </div>
+        
+        <div class="mySlides fade">
+            <img src="7.jpg" alt="Northern lights">
+        </div>
+        
+        <div class="mySlides fade">
+            <img src="8.jpg" alt="Waterfall">
+        </div>
+        
+        <div class="mySlides fade">
+            <img src="9.jpg" alt="Mountain lake">
+        </div>
+        
+        <div class="mySlides fade">
+            <img src="10.jpg" alt="City skyline">
+        </div>
+        
+        <div class="mySlides fade">
+            <img src="11.jpg" alt="Tropical beach">
+        </div>
+        
+        <div class="mySlides fade">
+            <img src="12.jpg" alt="Autumn forest">
+        </div>
+        
+        <div class="mySlides fade">
+            <img src="13.jpg" alt="Winter cabin">
+        </div>
+        
+        <div class="mySlides fade">
+            <img src="14.jpg" alt="Sunrise over hills">
+        </div>
+        
+        <div class="mySlides fade">
+            <img src="15.jpg" alt="Ocean waves">
+        </div>
+        
+        <div class="mySlides fade">
+            <img src="16.jpg" alt="Wildlife safari">
+        </div>
+        
+        <div class="mySlides fade">
+            <img src="17.jpg" alt="Historic architecture">
+        </div>
+        
+        <div class="mySlides fade">
+            <img src="18.jpg" alt="Garden flowers">
+        </div>
+        
+        <div class="mySlides fade">
+            <img src="19.jpg" alt="Starry night">
+        </div>
+        
+        <div class="mySlides fade">
+            <img src="20.jpg" alt="Mountain peak">
+        </div>
+        
+        <div class="mySlides fade">
+            <img src="21.jpg" alt="River valley">
+        </div>
+        
+        <div class="mySlides fade">
+            <img src="22.jpg" alt="Desert dunes">
+        </div>
+        
+        <div class="mySlides fade">
+            <img src="23.jpg" alt="Coastal cliffs">
+        </div>
+        
+        <div class="mySlides fade">
+            <img src="24.jpg" alt="Forest mist">
+        </div>
+        
+        <div class="mySlides fade">
+            <img src="25.jpg" alt="Ice glaciers">
+        </div>
+        
+        <div class="mySlides fade">
+            <img src="26.jpg" alt="Volcano landscape">
+        </div>
+        
+        <div class="mySlides fade">
+            <img src="27.jpg" alt="Rice terraces">
+        </div>
+        
+        <div class="mySlides fade">
+            <img src="28.jpg" alt="Canyon view">
+        </div>
+        
+        <div class="mySlides fade">
+            <img src="29.jpg" alt="Floating market">
+        </div>
+        
+        <div class="mySlides fade">
+            <img src="30.jpg" alt="Ancient ruins">
+        </div>
+        
+        <div class="mySlides fade">
+            <img src="31.jpg" alt="Botanical garden">
+        </div>
+        
+        <div class="mySlides fade">
+            <img src="32.jpg" alt="Mountain pass">
+        </div>
+        
+        <div class="mySlides fade">
+            <img src="33.jpg" alt="Lakeside village">
+        </div>
+        
+        <div class="mySlides fade">
+            <img src="34.jpg" alt="Desert oasis">
+        </div>
+        
+        <div class="mySlides fade">
+            <img src="35.jpg" alt="Castle on hill">
+        </div>
+        
+        <div class="mySlides fade">
+            <img src="36.jpg" alt="Fjord landscape">
+        </div>
+        
+        <div class="mySlides fade">
+            <img src="37.jpg" alt="Hot air balloons">
+        </div>
+        
+        <div class="mySlides fade">
+            <img src="38.jpg" alt="Rainforest canopy">
+        </div>
+        
+        <div class="mySlides fade">
+            <img src="39.jpg" alt="Aurora borealis">
+        </div>
+        
+        <button class="prev" onclick="plusSlides(-1)">❮</button>
+        <button class="next" onclick="plusSlides(1)">❯</button>
         
         <div class="progress-bar">
             <div class="progress" id="slide-progress"></div>
@@ -508,6 +714,10 @@
             🔀 Shuffle
         </button>
         
+        <button class="control-btn night-mode-btn" id="night-mode-btn" onclick="toggleNightMode()">
+            🌙 Night Mode
+        </button>
+        
         <div class="speed-control">
             <span>Speed:</span>
             <select id="speed-selector" onchange="changeSpeed()">
@@ -526,6 +736,7 @@
         let slideshowSpeed = 3000;
         let slides = [];
         let totalSlides = 0;
+        let isNightMode = false;
         
         // Initialize slideshow
         document.addEventListener('DOMContentLoaded', function() {
@@ -542,6 +753,11 @@
             
             // Show first slide
             showSlides(slideIndex);
+            
+            // Check for saved night mode preference
+            if (localStorage.getItem('nightMode') === 'true') {
+                toggleNightMode();
+            }
             
             // Start auto-play after 3 seconds
             setTimeout(() => {
@@ -594,6 +810,7 @@
             
             // Hide all slides
             for (let i = 0; i < totalSlides; i++) {
+                slides[i].classList.remove('active');
                 slides[i].style.display = "none";
             }
             
@@ -610,6 +827,7 @@
             }
             
             // Show current slide
+            slides[slideIndex - 1].classList.add('active');
             slides[slideIndex - 1].style.display = "block";
             
             // Update active dot and thumbnail
@@ -621,6 +839,15 @@
             
             // Update progress bar
             updateProgressBar();
+            
+            // Scroll active thumbnail into view
+            if (thumbnails[slideIndex - 1]) {
+                thumbnails[slideIndex - 1].scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'nearest',
+                    inline: 'center'
+                });
+            }
         }
         
         function updateProgressBar() {
@@ -732,6 +959,26 @@
             }, 300);
         }
         
+        function toggleNightMode() {
+            const body = document.body;
+            const nightModeBtn = document.getElementById('night-mode-btn');
+            
+            isNightMode = !isNightMode;
+            
+            if (isNightMode) {
+                body.classList.add('night-mode');
+                nightModeBtn.textContent = '☀️ Day Mode';
+                nightModeBtn.classList.add('active');
+            } else {
+                body.classList.remove('night-mode');
+                nightModeBtn.textContent = '🌙 Night Mode';
+                nightModeBtn.classList.remove('active');
+            }
+            
+            // Save preference to localStorage
+            localStorage.setItem('nightMode', isNightMode);
+        }
+        
         // Keyboard navigation
         document.addEventListener('keydown', function(event) {
             switch(event.key) {
@@ -756,6 +1003,9 @@
                     break;
                 case 'a':
                     toggleAutoPlay();
+                    break;
+                case 'n':
+                    toggleNightMode();
                     break;
             }
         });
@@ -786,6 +1036,12 @@
                 plusSlides(-1);
             }
         }
+        
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            // Re-show current slide to maintain proper sizing
+            showSlides(slideIndex);
+        });
     </script>
 </body>
 </html>
